@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PunjabFind — LPU Community Resource Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TOKENS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+:root{
+  --bg:#07071a;--bg2:#0d0d26;--bg3:#131330;
+  --glass:rgba(255,255,255,.05);--glass2:rgba(255,255,255,.09);
+  --border:rgba(255,255,255,.09);--border2:rgba(255,255,255,.17);
+  --txt:#f0f0ff;--txt2:rgba(240,240,255,.6);--txt3:rgba(240,240,255,.3);
+  --blue:#5b9cff;--violet:#b87fff;--pink:#ff5fa0;--red:#ff5c5c;
+  --green:#4ecb71;--gold:#ffc94a;--cyan:#3df0c8;--orange:#ff8c42;
+  --grad:linear-gradient(135deg,#5b9cff,#b87fff);
+  --grad-em:linear-gradient(135deg,#ff5c5c,#ff8c42);
+  --r:16px;--rs:10px;--rl:24px;
+  --fh:'Clash Display',sans-serif;--fb:'Cabinet Grotesk',sans-serif;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --t:.22s;
+}
+[data-theme=light]{
+  --bg:#f2f4ff;--bg2:#e8ebff;--bg3:#dee2ff;
+  --glass:rgba(255,255,255,.7);--glass2:rgba(255,255,255,.85);
+  --border:rgba(80,80,180,.13);--border2:rgba(80,80,180,.26);
+  --txt:#141433;--txt2:rgba(20,20,51,.62);--txt3:rgba(20,20,51,.35);
+}
+
+/* ━━━ RESET ━━━ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fb);background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:var(--fb);border:none;background:none}
+input{font-family:var(--fb)}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ━━━ BACKGROUND ━━━ */
+#bg-canvas{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:.22;animation:float 18s ease-in-out infinite alternate}
+.orb1{width:600px;height:600px;background:radial-gradient(#b87fff,#5b9cff);top:-200px;left:-200px;animation-delay:0s}
+.orb2{width:500px;height:500px;background:radial-gradient(#ff5fa0,#ff8c42);bottom:-150px;right:-150px;animation-delay:-8s}
+.orb3{width:350px;height:350px;background:radial-gradient(#3df0c8,#5b9cff);top:40%;left:30%;animation-delay:-4s}
+[data-theme=light] .orb{opacity:.1}
+@keyframes float{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,80px) scale(1.15)}}
+.grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:50px 50px;opacity:.6}
+[data-theme=light] .grid-lines{background-image:linear-gradient(rgba(0,0,180,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,180,.04) 1px,transparent 1px)}
+
+/* ━━━ EMERGENCY RIBBON ━━━ */
+#em-ribbon{
+  display:none;position:relative;z-index:200;
+  background:linear-gradient(90deg,#ff2020,#ff5c5c,#ff8c42,#ff5c5c,#ff2020);
+  background-size:400% 100%;animation:ribbon 2s linear infinite;
+  color:#fff;font-family:var(--fh);font-weight:600;font-size:.88rem;
+  padding:11px 5%;gap:12px;align-items:center;justify-content:center;
+}
+#em-ribbon.show{display:flex}
+@keyframes ribbon{0%{background-position:0 0}100%{background-position:400% 0}}
+.em-dot{width:10px;height:10px;border-radius:50%;background:#fff;flex-shrink:0;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.5)}}
+.em-close{margin-left:auto;background:rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:.2s}
+.em-close:hover{background:rgba(255,255,255,.35)}
+
+/* ━━━ HEADER ━━━ */
+header{
+  position:sticky;top:0;z-index:150;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 5%;
+  background:rgba(7,7,26,.8);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+}
+[data-theme=light] header{background:rgba(242,244,255,.85)}
+.logo{display:flex;align-items:center;gap:11px}
+.logo-icon{
+  width:40px;height:40px;border-radius:11px;
+  background:var(--grad);display:flex;align-items:center;justify-content:center;
+  font-family:var(--fh);font-weight:700;font-size:1.05rem;color:#fff;
+  box-shadow:0 4px 20px rgba(91,156,255,.4)
+}
+.logo-name{font-family:var(--fh);font-weight:700;font-size:1.35rem;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1}
+.logo-tag{display:block;font-size:.68rem;color:var(--txt3);letter-spacing:.05em;font-style:italic}
+.hdr-acts{display:flex;gap:7px}
+.hb{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--glass);border:1px solid var(--border);
+  color:var(--txt2);display:flex;align-items:center;justify-content:center;
+  font-size:.88rem;transition:all var(--t) var(--ease);
+  backdrop-filter:blur(12px);
+}
+.hb:hover{border-color:var(--blue);color:var(--blue);transform:scale(1.1)}
+.hb.em{border-color:rgba(255,92,92,.3);color:var(--red)}
+.hb.em:hover{border-color:var(--red);box-shadow:0 0 16px rgba(255,92,92,.3)}
+
+/* ━━━ LOCATION BAR ━━━ */
+#loc-bar{
+  display:none;position:relative;z-index:10;
+  align-items:center;gap:10px;padding:9px 5%;
+  background:rgba(91,156,255,.07);border-bottom:1px solid rgba(91,156,255,.13);
+  font-size:.83rem;color:var(--txt2);animation:sld .3s ease
+}
+#loc-bar.show{display:flex}
+#loc-bar i{color:var(--blue);font-size:.9rem}
+#loc-badge{
+  margin-left:auto;background:rgba(91,156,255,.13);border:1px solid rgba(91,156,255,.28);
+  color:var(--blue);font-size:.7rem;font-family:var(--fh);font-weight:600;
+  padding:3px 11px;border-radius:50px
+}
+@keyframes sld{from{transform:translateY(-100%);opacity:0}to{transform:none;opacity:1}}
+
+/* ━━━ HERO ━━━ */
+.hero{
+  position:relative;z-index:5;
+  padding:72px 5% 52px;text-align:center
+}
+.hero-inner{max-width:680px;margin:0 auto}
+.hero-h1{
+  font-family:var(--fh);font-weight:700;
+  font-size:clamp(2.4rem,6vw,4.4rem);line-height:1.05;
+  letter-spacing:-1.5px;margin-bottom:16px
+}
+.hero-h1 .hl{
+  display:inline-block;
+  background:linear-gradient(135deg,var(--red),var(--gold),var(--blue),var(--violet));
+  background-size:300% 300%;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;animation:gc 5s ease infinite
+}
+@keyframes gc{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+.hero-sub{font-size:.98rem;color:var(--txt2);line-height:1.75;margin-bottom:36px}
+.hero-sub b{color:var(--txt)}
+
+/* ━━━ SEARCH ━━━ */
+.srch-wrap{position:relative;max-width:580px;margin:0 auto}
+.srch-box{
+  display:flex;align-items:center;gap:4px;
+  padding:5px 5px 5px 18px;
+  background:var(--glass2);border:1.5px solid var(--border2);
+  border-radius:50px;backdrop-filter:blur(24px);
+  box-shadow:0 8px 40px rgba(0,0,0,.35);
+  transition:border-color var(--t),box-shadow var(--t)
+}
+.srch-box:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(91,156,255,.18),0 8px 40px rgba(0,0,0,.35)}
+.srch-box i{color:var(--txt3);font-size:.9rem;flex-shrink:0}
+.srch-box input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--txt);font-size:.95rem;min-width:0
+}
+.srch-box input::placeholder{color:var(--txt3)}
+.srch-clr{color:var(--txt3);padding:5px 8px;font-size:.85rem;display:none;transition:color var(--t)}
+.srch-clr:hover{color:var(--txt)}
+.srch-go{
+  flex-shrink:0;background:var(--grad);color:#fff;
+  padding:10px 22px;border-radius:50px;
+  font-family:var(--fh);font-weight:600;font-size:.85rem;
+  transition:transform var(--t),box-shadow var(--t);white-space:nowrap
+}
+.srch-go:hover{transform:scale(1.04);box-shadow:0 4px 18px rgba(91,156,255,.4)}
+
+/* Suggestions */
+.suggestions{
+  position:absolute;top:calc(100% + 8px);left:0;right:0;z-index:60;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);
+  overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.5);animation:fadeUp .18s ease
+}
+.sug-item{
+  display:flex;align-items:center;gap:10px;padding:11px 16px;
+  border-bottom:1px solid var(--border);cursor:pointer;font-size:.88rem;
+  transition:background var(--t)
+}
+.sug-item:last-child{border-bottom:none}
+.sug-item:hover{background:rgba(91,156,255,.1)}
+.sug-em{font-size:1.1rem;width:22px;text-align:center}
+.sug-match{color:var(--blue);font-weight:700}
+.sug-hint{margin-left:auto;font-size:.7rem;color:var(--txt3);font-style:italic}
+
+/* Recent chips */
+.recent-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center}
+.rchip{
+  background:var(--glass);border:1px solid var(--border);
+  padding:5px 13px;border-radius:50px;font-size:.75rem;color:var(--txt2);
+  cursor:pointer;display:flex;align-items:center;gap:5px;transition:all var(--t)
+}
+.rchip:hover{border-color:var(--blue);color:var(--blue)}
+.rchip i{font-size:.6rem}
+
+/* ━━━ CITY TABS ━━━ */
+.city-tabs{
+  position:relative;z-index:5;
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  padding:0 5% 22px
+}
+.ctab{
+  padding:9px 19px;border-radius:50px;
+  background:var(--glass);border:1.5px solid var(--border);
+  color:var(--txt2);font-family:var(--fh);font-weight:600;font-size:.82rem;
+  transition:all var(--t) var(--ease);backdrop-filter:blur(12px)
+}
+.ctab:hover{border-color:var(--blue);color:var(--blue)}
+.ctab.on{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 4px 20px rgba(91,156,255,.38)}
+
+/* ━━━ SORT BAR ━━━ */
+#sort-bar{
+  display:none;position:relative;z-index:5;
+  align-items:center;flex-wrap:wrap;gap:8px;padding:0 5% 20px
+}
+#sort-bar.show{display:flex}
+.sort-lbl{font-size:.77rem;color:var(--txt3);font-family:var(--fh);margin-right:2px}
+.srtbtn{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 14px;border-radius:50px;
+  background:var(--glass);border:1px solid var(--border);
+  color:var(--txt2);font-size:.76rem;font-family:var(--fh);font-weight:600;
+  transition:all var(--t)
+}
+.srtbtn:hover{border-color:var(--blue);color:var(--blue)}
+.srtbtn.on{background:rgba(91,156,255,.15);border-color:var(--blue);color:var(--blue)}
+#res-count{margin-left:auto;font-size:.77rem;color:var(--txt3);font-style:italic}
+
+/* ━━━ CATEGORY SECTION ━━━ */
+#cat-section{position:relative;z-index:5;padding:10px 5% 50px}
+.sec-h{font-family:var(--fh);font-weight:700;font-size:1.6rem;margin-bottom:22px;letter-spacing:-.5px}
+.cat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+  gap:14px
+}
+.cat-card{
+  background:var(--glass);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:26px 18px 22px;cursor:pointer;text-align:center;
+  backdrop-filter:blur(16px);
+  transition:transform var(--t) var(--ease),box-shadow var(--t),border-color var(--t);
+  position:relative;overflow:hidden;animation:popIn .5s ease both
+}
+.cat-card::after{
+  content:'';position:absolute;inset:0;
+  background:var(--cc-g);opacity:0;transition:opacity var(--t);border-radius:inherit
+}
+.cat-card:hover{transform:translateY(-6px) scale(1.02);border-color:var(--cc-a);box-shadow:0 16px 50px var(--cc-s)}
+.cat-card:hover::after{opacity:.13}
+.cc-icon{font-size:2.5rem;display:block;margin-bottom:10px;position:relative;z-index:1}
+.cc-lbl{font-family:var(--fh);font-weight:700;font-size:.97rem;margin-bottom:4px;position:relative;z-index:1}
+.cc-cnt{font-size:.75rem;color:var(--txt2);position:relative;z-index:1}
+
+/* ━━━ RESULT SECTION ━━━ */
+#res-section{display:none;position:relative;z-index:5;padding:10px 5% 50px}
+.res-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.back-btn{
+  display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:50px;
+  background:var(--glass);border:1px solid var(--border);color:var(--txt2);font-size:.83rem;
+  backdrop-filter:blur(10px);transition:all var(--t)
+}
+.back-btn:hover{border-color:var(--blue);color:var(--blue);transform:translateX(-3px)}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+
+/* ━━━ RESOURCE CARD ━━━ */
+.rc{
+  background:var(--glass);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:20px;backdrop-filter:blur(16px);cursor:pointer;
+  transition:transform var(--t) var(--ease),box-shadow var(--t),border-color var(--t);
+  animation:popIn .45s ease both;position:relative
+}
+.rc:hover{transform:translateY(-4px);box-shadow:0 14px 44px var(--rc-s);border-color:var(--rc-a)}
+.rc-top{display:flex;align-items:flex-start;gap:11px;margin-bottom:10px}
+.rc-icon{font-size:1.85rem;flex-shrink:0;line-height:1}
+.rc-meta2{flex:1;min-width:0}
+.rc-name{font-family:var(--fh);font-weight:700;font-size:.97rem;line-height:1.25;margin-bottom:3px}
+.rc-city{font-size:.72rem;color:var(--txt3)}
+.rc-fav{color:var(--txt3);font-size:.95rem;padding:4px;border-radius:50%;transition:all var(--t);flex-shrink:0}
+.rc-fav:hover,.rc-fav.on{color:var(--red);transform:scale(1.2)}
+.rc-addr{font-size:.8rem;color:var(--txt2);margin-bottom:9px;line-height:1.5}
+.rc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+.tag{padding:3px 10px;border-radius:50px;font-size:.69rem;font-weight:700;font-family:var(--fh);border:1px solid}
+.tg-em{background:rgba(255,92,92,.13);color:#ff8f8f;border-color:rgba(255,92,92,.28)}
+.tg-open{background:rgba(78,203,113,.13);color:#78e09a;border-color:rgba(78,203,113,.28)}
+.tg-close{background:rgba(255,80,80,.1);color:#ff9090;border-color:rgba(255,80,80,.22)}
+.tg-cat{background:rgba(91,156,255,.12);color:#8ebfff;border-color:rgba(91,156,255,.25)}
+.rc-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}
+.rc-dist{font-size:.75rem;color:var(--blue);display:flex;align-items:center;gap:4px}
+.rc-stars{color:var(--gold);font-size:.75rem}
+.rc-phone{font-size:.77rem;color:var(--txt2);margin-top:6px;display:flex;align-items:center;gap:5px}
+
+/* ━━━ NO RESULTS ━━━ */
+.no-res{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--txt2)}
+.no-res .nr-ico{font-size:3.5rem;display:block;margin-bottom:12px}
+.no-res h3{font-family:var(--fh);font-size:1.15rem;margin-bottom:8px;color:var(--txt)}
+.no-res p{font-size:.87rem;max-width:340px;margin:0 auto;line-height:1.65}
+
+/* ━━━ STATS ━━━ */
+#stats{
+  position:relative;z-index:5;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+  gap:12px;padding:0 5% 60px
+}
+.stat{
+  background:var(--glass);border:1px solid var(--border);border-radius:var(--r);
+  padding:24px 14px;text-align:center;backdrop-filter:blur(12px);
+  transition:transform var(--t)
+}
+.stat:hover{transform:translateY(-4px)}
+.sn{display:block;font-family:var(--fh);font-size:2rem;font-weight:700;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sl{font-size:.78rem;color:var(--txt2);margin-top:4px;display:block}
+
+/* ━━━ FOOTER ━━━ */
+footer{
+  position:relative;z-index:5;text-align:center;
+  padding:22px 5%;border-top:1px solid var(--border);
+  font-size:.8rem;color:var(--txt3);
+  background:rgba(7,7,26,.55);backdrop-filter:blur(8px)
+}
+
+/* ━━━ FAVORITES PANEL ━━━ */
+#fav-panel{
+  position:fixed;top:0;right:-380px;width:360px;max-width:90vw;height:100vh;
+  background:var(--bg2);border-left:1px solid var(--border);
+  z-index:310;transition:right .34s var(--ease);display:flex;flex-direction:column
+}
+#fav-panel.open{right:0}
+.pov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:305}
+.pov.show{display:block}
+.sp-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  font-family:var(--fh);font-weight:700;font-size:1rem
+}
+.sp-hdr button{color:var(--txt2);font-size:1rem;padding:4px;border-radius:50%;transition:.2s}
+.sp-hdr button:hover{color:var(--txt)}
+.sp-body{flex:1;overflow-y:auto;padding:14px 18px}
+.fav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 13px;border-radius:var(--rs);
+  border:1px solid var(--border);margin-bottom:8px;cursor:pointer;
+  background:var(--glass);transition:all var(--t)
+}
+.fav-item:hover{border-color:var(--blue);transform:translateX(3px)}
+.fi-icon{font-size:1.4rem}
+.fi-info{flex:1;min-width:0}
+.fi-name{font-family:var(--fh);font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fi-city{font-size:.72rem;color:var(--txt3)}
+.fi-del{color:var(--txt3);font-size:.85rem;transition:color var(--t)}
+.fi-del:hover{color:var(--red)}
+.sp-empty{text-align:center;color:var(--txt3);padding:40px 10px;font-size:.88rem}
+
+/* ━━━ MODAL ━━━ */
+#modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);z-index:400;align-items:center;justify-content:center;padding:16px}
+#modal.open{display:flex}
+.modal-box{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);
+  padding:30px 26px;max-width:440px;width:100%;
+  box-shadow:0 24px 80px rgba(0,0,0,.65);animation:popIn .28s ease;
+  position:relative;overflow:hidden;max-height:90vh;overflow-y:auto
+}
+.modal-box::before{
+  content:'';position:absolute;top:-100px;right:-100px;
+  width:220px;height:220px;border-radius:50%;
+  background:var(--grad);opacity:.07;pointer-events:none
+}
+.modal-x{
+  position:absolute;top:14px;right:14px;
+  background:var(--glass2);border:1px solid var(--border);color:var(--txt2);
+  width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;transition:all var(--t)
+}
+.modal-x:hover{color:var(--txt);background:var(--glass)}
+.m-top{display:flex;align-items:flex-start;gap:13px;margin-bottom:14px}
+.m-icon{font-size:2.8rem;flex-shrink:0;line-height:1}
+.m-title{flex:1;padding-right:8px}
+.m-name{font-family:var(--fh);font-weight:700;font-size:1.3rem;line-height:1.2;margin-bottom:4px}
+.m-cat{font-size:.78rem;color:var(--txt2)}
+.m-fav{color:var(--txt3);font-size:1.3rem;flex-shrink:0;padding:4px;border-radius:50%;transition:all var(--t)}
+.m-fav:hover,.m-fav.on{color:var(--red)}
+.m-badges{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.m-info{
+  background:var(--glass);border:1px solid var(--border);border-radius:var(--rs);
+  padding:14px;font-size:.85rem;line-height:2;margin-bottom:13px
+}
+.m-info strong{color:var(--blue)}
+.m-rating{display:flex;align-items:center;gap:6px;font-size:.84rem;margin-bottom:16px}
+.m-stars{color:var(--gold);letter-spacing:1px}
+.m-rv{font-family:var(--fh);font-weight:700}
+.m-rc{color:var(--txt3)}
+.m-dist{background:rgba(91,156,255,.12);border:1px solid rgba(91,156,255,.25);color:var(--blue);font-size:.75rem;font-family:var(--fh);font-weight:600;padding:3px 11px;border-radius:50px}
+.m-acts{display:flex;gap:7px;flex-wrap:wrap}
+.mab{
+  display:flex;align-items:center;gap:6px;flex:1;min-width:90px;
+  padding:11px 12px;border-radius:50px;font-family:var(--fh);font-weight:700;font-size:.79rem;
+  justify-content:center;transition:all var(--t)
+}
+.mab.p{background:var(--grad);color:#fff}
+.mab.p:hover{box-shadow:0 6px 22px rgba(91,156,255,.4);transform:translateY(-1px)}
+.mab.g{background:rgba(78,203,113,.13);border:1px solid rgba(78,203,113,.27);color:#78e09a}
+.mab.g:hover{background:rgba(78,203,113,.22)}
+.mab.r{background:rgba(255,92,92,.12);border:1px solid rgba(255,92,92,.27);color:#ff8f8f}
+.mab.r:hover{background:rgba(255,92,92,.22)}
+
+/* ━━━ TOAST ━━━ */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(70px);
+  background:rgba(13,13,38,.96);color:var(--txt);
+  border:1px solid var(--border2);border-radius:50px;
+  padding:11px 22px;font-size:.84rem;backdrop-filter:blur(20px);
+  z-index:500;box-shadow:0 8px 30px rgba(0,0,0,.4);
+  transition:transform .3s var(--ease),opacity .3s;opacity:0;white-space:nowrap
+}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ━━━ KEYFRAMES ━━━ */
+@keyframes popIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ━━━ RESPONSIVE ━━━ */
+@media(max-width:600px){
+  header{padding:12px 4%}
+  .hero{padding:50px 4% 36px}
+  #cat-section,#res-section,#stats{padding-left:4%;padding-right:4%}
+  .modal-box{padding:22px 16px}
+  .m-acts{flex-direction:column}
+  .srch-go{padding:9px 14px;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div id="bg-canvas">
+  <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+  <div class="grid-lines"></div>
+</div>
+
+<!-- EMERGENCY RIBBON -->
+<div id="em-ribbon">
+  <div class="em-dot"></div>
+  <span>🚨 EMERGENCY MODE — Nearest emergency services only</span>
+  <button class="em-close" onclick="toggleEM()"><i class="fas fa-xmark"></i></button>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">PF</div>
+    <div>
+      <span class="logo-name">PunjabFind</span>
+      <span class="logo-tag">LPU · Phagwara · Jalandhar · Ludhiana</span>
+    </div>
+  </div>
+  <div class="hdr-acts">
+    <button class="hb" onclick="getLocation()" title="Use my location" id="loc-btn"><i class="fas fa-location-crosshairs"></i></button>
+    <button class="hb em" onclick="toggleEM()" title="Emergency mode"><i class="fas fa-triangle-exclamation"></i></button>
+    <button class="hb" onclick="openFav()" title="Favorites" id="fav-hb"><i class="fas fa-heart"></i></button>
+    <button class="hb" onclick="toggleTheme()" id="theme-btn" title="Toggle theme"><i class="fas fa-moon"></i></button>
+  </div>
+</header>
+
+<!-- LOCATION BAR -->
+<div id="loc-bar">
+  <i class="fas fa-map-pin"></i>
+  <span id="loc-txt">Detecting your location…</span>
+  <span id="loc-badge"></span>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-h1">Find What <span class="hl">Matters</span><br>Near You</h1>
+    <p class="hero-sub">Hospitals · ATMs · Police · Pharmacies · Schools · Banks<br>
+      <b>LPU Campus · Phagwara · Jalandhar · Ludhiana</b></p>
+    <div class="srch-wrap">
+      <div class="srch-box">
+        <i class="fas fa-magnifying-glass"></i>
+        <input id="srch-in" type="text" placeholder="Try: hospital, ATM, doctor, police, pharmacy…" autocomplete="off" spellcheck="false"/>
+        <button class="srch-clr" id="srch-clr" onclick="clearSrch()"><i class="fas fa-xmark"></i></button>
+        <button class="srch-go" onclick="doSearch()">Search</button>
+      </div>
+      <div id="suggestions" class="suggestions" style="display:none"></div>
+      <div class="recent-row" id="recent-row"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CITY TABS -->
+<div class="city-tabs" id="city-tabs">
+  <button class="ctab on" data-c="All" onclick="setCity(this,'All')">🌍 All Cities</button>
+  <button class="ctab" data-c="LPU Campus" onclick="setCity(this,'LPU Campus')">📍 LPU Campus</button>
+  <button class="ctab" data-c="Phagwara" onclick="setCity(this,'Phagwara')">🏘️ Phagwara</button>
+  <button class="ctab" data-c="Jalandhar" onclick="setCity(this,'Jalandhar')">🏙️ Jalandhar</button>
+  <button class="ctab" data-c="Ludhiana" onclick="setCity(this,'Ludhiana')">🌆 Ludhiana</button>
+</div>
+
+<!-- SORT BAR -->
+<div id="sort-bar">
+  <span class="sort-lbl">Sort:</span>
+  <button class="srtbtn on" data-s="distance" onclick="setSort(this,'distance')"><i class="fas fa-route"></i> Distance</button>
+  <button class="srtbtn" data-s="rating" onclick="setSort(this,'rating')"><i class="fas fa-star"></i> Rating</button>
+  <button class="srtbtn" data-s="name" onclick="setSort(this,'name')"><i class="fas fa-arrow-down-a-z"></i> Name</button>
+  <span id="res-count"></span>
+</div>
+
+<!-- CATEGORIES -->
+<section id="cat-section">
+  <h2 class="sec-h">Browse by Category</h2>
+  <div class="cat-grid" id="cat-grid"></div>
+</section>
+
+<!-- RESULTS -->
+<section id="res-section">
+  <div class="res-hdr">
+    <h2 class="sec-h" id="res-title"></h2>
+    <button class="back-btn" onclick="showCats()"><i class="fas fa-arrow-left"></i> Back</button>
+  </div>
+  <div class="res-grid" id="res-grid"></div>
+</section>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="stat"><span class="sn">8</span><span class="sl">Categories</span></div>
+  <div class="stat"><span class="sn">65+</span><span class="sl">Resources</span></div>
+  <div class="stat"><span class="sn">4</span><span class="sl">Cities</span></div>
+  <div class="stat"><span class="sn">24/7</span><span class="sl">Emergency</span></div>
+</div>
+
+<!-- FOOTER -->
+<footer>Made with ❤️ for LPU Students &nbsp;·&nbsp; AIML Project 2025 &nbsp;·&nbsp; Punjab, India</footer>
+
+<!-- FAV PANEL -->
+<div class="pov" id="pov" onclick="closeFav()"></div>
+<div id="fav-panel">
+  <div class="sp-hdr">
+    <span><i class="fas fa-heart" style="color:var(--red);margin-right:7px"></i>Favorites</span>
+    <button onclick="closeFav()"><i class="fas fa-xmark"></i></button>
+  </div>
+  <div class="sp-body" id="fav-list"></div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-x" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
+    <div class="m-top">
+      <div class="m-icon" id="m-icon"></div>
+      <div class="m-title">
+        <div class="m-name" id="m-name"></div>
+        <div class="m-cat" id="m-cat"></div>
+      </div>
+      <button class="m-fav" id="m-fav" onclick="toggleFavModal()"><i class="fas fa-heart"></i></button>
+    </div>
+    <div class="m-badges" id="m-badges"></div>
+    <div class="m-info" id="m-info"></div>
+    <div class="m-rating" id="m-rating"></div>
+    <div class="m-acts">
+      <a class="mab p" id="m-maps" href="#" target="_blank"><i class="fas fa-map-location-dot"></i> Google Maps</a>
+      <a class="mab g" id="m-dir" href="#" target="_blank"><i class="fas fa-diamond-turn-right"></i> Directions</a>
+      <a class="mab r" id="m-call" href="#"><i class="fas fa-phone"></i> Call</a>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   DATA — Real Punjab locations near LPU
+══════════════════════════════════════════════════════════════ */
+const CATS=[
+  {id:'hospitals',  label:'Hospitals',          icon:'🏥', clr:{g:'#ff5c5c',s:'rgba(255,92,92,.32)',a:'#ff5c5c'}},
+  {id:'atms',       label:'ATMs',               icon:'🏧', clr:{g:'#ffc94a',s:'rgba(255,201,74,.32)',a:'#ffc94a'}},
+  {id:'police',     label:'Police Stations',    icon:'🚔', clr:{g:'#5b9cff',s:'rgba(91,156,255,.32)',a:'#5b9cff'}},
+  {id:'pharmacies', label:'Pharmacies',         icon:'💊', clr:{g:'#4ecb71',s:'rgba(78,203,113,.32)',a:'#4ecb71'}},
+  {id:'education',  label:'Colleges & Schools', icon:'🎓', clr:{g:'#b87fff',s:'rgba(184,127,255,.32)',a:'#b87fff'}},
+  {id:'fire',       label:'Fire Stations',      icon:'🚒', clr:{g:'#ff8c42',s:'rgba(255,140,66,.32)',a:'#ff8c42'}},
+  {id:'parks',      label:'Malls & Parks',      icon:'🛍️', clr:{g:'#3df0c8',s:'rgba(61,240,200,.32)',a:'#3df0c8'}},
+  {id:'banks',      label:'Banks',              icon:'🏦', clr:{g:'#ff5fa0',s:'rgba(255,95,160,.32)',a:'#ff5fa0'}},
+];
+
+const DATA={
+  hospitals:[
+    {name:'LPU Campus Medical Centre',   addr:'Lovely Professional University, NH-1, Phagwara 144411', phone:'01824-404040', hours:'Open 24/7', emergency:true, city:'LPU Campus',lat:31.2544,lng:75.7051,rating:4.5,reviews:312},
+    {name:'Civil Hospital Phagwara',     addr:'GT Road, Phagwara, Punjab 144401',                      phone:'01824-260033', hours:'Open 24/7', emergency:true, city:'Phagwara',  lat:31.2232,lng:75.7706,rating:3.8,reviews:189},
+    {name:'Mata Kaushalya Hospital',     addr:'Near Bus Stand, Phagwara, Punjab',                      phone:'01824-261010', hours:'Open 24/7', emergency:true, city:'Phagwara',  lat:31.2220,lng:75.7690,rating:4.1,reviews:247},
+    {name:'Ivy Hospital Jalandhar',      addr:'GT Road, Nakodar Chowk, Jalandhar',                     phone:'0181-5055000', hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3260,lng:75.5762,rating:4.6,reviews:521},
+    {name:'Civil Hospital Jalandhar',    addr:'BMC Chowk, Jalandhar, Punjab 144001',                   phone:'0181-2224911', hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3282,lng:75.5830,rating:3.7,reviews:304},
+    {name:'Tagore Hospital Jalandhar',   addr:'Tagore Nagar, Jalandhar, Punjab 144001',                phone:'0181-5065000', hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3210,lng:75.5900,rating:4.4,reviews:417},
+    {name:'Fortis Hospital Jalandhar',   addr:'Sherpur Chowk, GT Road, Jalandhar',                     phone:'0181-5300100', hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3350,lng:75.5710,rating:4.7,reviews:683},
+    {name:'DMC & Hospital Ludhiana',     addr:'Tagore Nagar, Ludhiana, Punjab 141001',                 phone:'0161-2302222', hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9090,lng:75.8570,rating:4.6,reviews:892},
+    {name:'Civil Hospital Ludhiana',     addr:'Near Bus Stand, Ludhiana, Punjab',                      phone:'0161-2401360', hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9010,lng:75.8570,rating:3.6,reviews:311},
+    {name:'SPS Hospital Ludhiana',       addr:'Sherpur Chowk, Ludhiana',                               phone:'0161-5055100', hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9050,lng:75.8500,rating:4.4,reviews:534},
+    {name:'CMC Ludhiana',                addr:'Brown Road, Ludhiana, Punjab 141008',                   phone:'0161-2025400', hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9100,lng:75.8620,rating:4.8,reviews:1204},
+  ],
+  atms:[
+    {name:'SBI ATM – LPU Campus',        addr:'Inside LPU Campus, NH-1, Phagwara',          phone:'1800-11-2211',  hours:'Open 24/7', emergency:false, city:'LPU Campus',lat:31.2544,lng:75.7051,rating:4.2,reviews:88},
+    {name:'HDFC ATM – LPU Gate',         addr:'NH-1, Near LPU Main Gate, Phagwara',          phone:'1800-202-6161', hours:'Open 24/7', emergency:false, city:'LPU Campus',lat:31.2550,lng:75.7040,rating:4.0,reviews:67},
+    {name:'PNB ATM – Phagwara',          addr:'GT Road, Near Bus Stand, Phagwara',           phone:'1800-180-2222', hours:'Open 24/7', emergency:false, city:'Phagwara',  lat:31.2230,lng:75.7700,rating:3.9,reviews:52},
+    {name:'Axis Bank ATM – Phagwara',    addr:'Guru Nanak Market, Phagwara',                 phone:'1800-419-5959', hours:'Open 24/7', emergency:false, city:'Phagwara',  lat:31.2215,lng:75.7715,rating:4.1,reviews:71},
+    {name:'SBI ATM – Model Town Jal.',   addr:'Model Town, Jalandhar',                       phone:'1800-11-2211',  hours:'Open 24/7', emergency:false, city:'Jalandhar', lat:31.3350,lng:75.5900,rating:4.3,reviews:102},
+    {name:'ICICI ATM – BMC Chowk',       addr:'BMC Chowk, Jalandhar',                        phone:'1800-200-3344', hours:'Open 24/7', emergency:false, city:'Jalandhar', lat:31.3280,lng:75.5830,rating:4.1,reviews:95},
+    {name:'Canara ATM – Lajpat Nagar',   addr:'Lajpat Nagar, Jalandhar',                     phone:'1800-425-0018', hours:'Open 24/7', emergency:false, city:'Jalandhar', lat:31.3200,lng:75.5750,rating:3.8,reviews:73},
+    {name:'SBI ATM – Ludhiana Main',     addr:'Feroze Gandhi Market, Ludhiana',               phone:'1800-11-2211',  hours:'Open 24/7', emergency:false, city:'Ludhiana',  lat:30.9010,lng:75.8530,rating:4.2,reviews:147},
+    {name:'HDFC ATM – Sarabha Nagar',    addr:'Sarabha Nagar, Ludhiana',                      phone:'1800-202-6161', hours:'Open 24/7', emergency:false, city:'Ludhiana',  lat:30.9050,lng:75.8700,rating:4.0,reviews:112},
+    {name:'Punjab & Sind ATM – Ludhiana',addr:'Chaura Bazar, Ludhiana',                       phone:'1800-419-8300', hours:'Open 24/7', emergency:false, city:'Ludhiana',  lat:30.9000,lng:75.8550,rating:3.7,reviews:64},
+  ],
+  police:[
+    {name:'LPU Security Control Room',   addr:'Gate 1, LPU Campus, Phagwara',             phone:'01824-404404',       hours:'Open 24/7', emergency:true, city:'LPU Campus',lat:31.2544,lng:75.7051,rating:4.4,reviews:58},
+    {name:'Phagwara City Police Station',addr:'GT Road, Phagwara, Punjab 144401',          phone:'01824-260100 / 100', hours:'Open 24/7', emergency:true, city:'Phagwara',  lat:31.2226,lng:75.7710,rating:3.9,reviews:134},
+    {name:'Phagwara Sadar Police',       addr:'Near Railway Station, Phagwara',            phone:'01824-260200',       hours:'Open 24/7', emergency:true, city:'Phagwara',  lat:31.2210,lng:75.7730,rating:3.7,reviews:96},
+    {name:'Division No.1 Police – Jal.', addr:'Near BMC Chowk, Jalandhar',                phone:'0181-2222222 / 100', hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3282,lng:75.5832,rating:3.8,reviews:201},
+    {name:'Jalandhar Cantt Police',      addr:'Cantonment Road, Jalandhar',                phone:'0181-2280100',       hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3320,lng:75.5780,rating:3.9,reviews:88},
+    {name:'Women Safety Cell – Jal.',    addr:'District Court Complex, Jalandhar',         phone:'1091 / 0181-2224999',hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3260,lng:75.5850,rating:4.2,reviews:74},
+    {name:'Ludhiana Central Police',     addr:'Feroze Gandhi Market, Ludhiana',            phone:'0161-2402200 / 100', hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9010,lng:75.8540,rating:3.8,reviews:312},
+    {name:'Sadar Police Station Ldh.',   addr:'Near Bus Stand, Ludhiana',                  phone:'0161-2401100',       hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9020,lng:75.8560,rating:3.7,reviews:178},
+    {name:'Div. No.5 Police – Ludhiana', addr:'Haibowal, Ludhiana',                        phone:'0161-2500100',       hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9100,lng:75.8680,rating:3.9,reviews:122},
+  ],
+  pharmacies:[
+    {name:'LPU Campus Pharmacy',         addr:'Inside LPU Campus, Phagwara',           phone:'01824-404040',   hours:'8 AM – 10 PM', emergency:false, city:'LPU Campus',lat:31.2544,lng:75.7051,rating:4.3,reviews:214},
+    {name:'Apollo Pharmacy – Phagwara',  addr:'GT Road, Main Market, Phagwara',        phone:'+91 97801 23456',hours:'Open 24/7',    emergency:true,  city:'Phagwara',  lat:31.2228,lng:75.7705,rating:4.5,reviews:189},
+    {name:'Jan Aushadhi – Phagwara',     addr:'Near Civil Hospital, Phagwara',         phone:'+91 96459 11111',hours:'9 AM – 6 PM',  emergency:false, city:'Phagwara',  lat:31.2235,lng:75.7695,rating:4.0,reviews:87},
+    {name:'MedPlus – Jalandhar',         addr:'Model Town, Jalandhar',                 phone:'+91 93000 22222',hours:'8 AM – 12 AM', emergency:false, city:'Jalandhar', lat:31.3360,lng:75.5910,rating:4.3,reviews:267},
+    {name:'Apollo Pharmacy – Jal.',      addr:'Nakodar Road, Jalandhar',               phone:'+91 88000 44444',hours:'Open 24/7',    emergency:true,  city:'Jalandhar', lat:31.3260,lng:75.5760,rating:4.4,reviews:312},
+    {name:'Wellness Forever – Jal.',     addr:'Lajpat Nagar, Jalandhar',               phone:'+91 94000 33333',hours:'9 AM – 10 PM', emergency:false, city:'Jalandhar', lat:31.3210,lng:75.5750,rating:4.2,reviews:188},
+    {name:'Apollo Pharmacy – Ludhiana',  addr:'Feroze Gandhi Market, Ludhiana',        phone:'+91 66000 66666',hours:'Open 24/7',    emergency:true,  city:'Ludhiana',  lat:30.9010,lng:75.8530,rating:4.5,reviews:421},
+    {name:'MedPlus – Ludhiana',          addr:'Sarabha Nagar, Ludhiana',               phone:'+91 77000 55555',hours:'8 AM – 12 AM', emergency:false, city:'Ludhiana',  lat:30.9055,lng:75.8700,rating:4.2,reviews:287},
+    {name:'Aster Pharmacy – Ludhiana',   addr:'BRS Nagar, Ludhiana',                   phone:'+91 55000 77777',hours:'9 AM – 10 PM', emergency:false, city:'Ludhiana',  lat:30.9070,lng:75.8720,rating:4.1,reviews:193},
+  ],
+  education:[
+    {name:'Lovely Professional University',addr:'NH-1, GT Road, Phagwara, Punjab 144411',  phone:'01824-404040',  hours:'Campus 24/7',  emergency:false, city:'LPU Campus',lat:31.2544,lng:75.7051,rating:4.4,reviews:4120},
+    {name:'Govt. Sr. Sec. School Phagwara',addr:'Near Civil Hospital, Phagwara',           phone:'01824-260150',  hours:'8 AM – 2 PM',  emergency:false, city:'Phagwara',  lat:31.2235,lng:75.7700,rating:3.9,reviews:124},
+    {name:'CT Institute of Tech.',          addr:'Shahpur, Jalandhar, Punjab',             phone:'0181-5051111',  hours:'9 AM – 5 PM',  emergency:false, city:'Jalandhar', lat:31.3820,lng:75.5200,rating:4.1,reviews:312},
+    {name:'NIT Jalandhar',                  addr:'GT Road, Amritsar Bypass, Jalandhar',   phone:'0181-2690301',  hours:'9 AM – 5 PM',  emergency:false, city:'Jalandhar', lat:31.3956,lng:75.5341,rating:4.5,reviews:1089},
+    {name:'DAV University Jalandhar',       addr:'Sarmastpur, NH-1, Jalandhar',           phone:'0181-2690400',  hours:'9 AM – 5 PM',  emergency:false, city:'Jalandhar', lat:31.3200,lng:75.5690,rating:4.2,reviews:788},
+    {name:'Hans Raj Mahila Vidyalaya',      addr:'Model Town, Jalandhar',                 phone:'0181-2224311',  hours:'8 AM – 2 PM',  emergency:false, city:'Jalandhar', lat:31.3380,lng:75.5900,rating:4.0,reviews:234},
+    {name:'Punjab Agricultural Univ.',      addr:'PAU Campus, Ludhiana, Punjab 141004',   phone:'0161-2401960',  hours:'9 AM – 5 PM',  emergency:false, city:'Ludhiana',  lat:30.9380,lng:75.8170,rating:4.5,reviews:2210},
+    {name:'GNDEC Ludhiana',                 addr:'Gill Park, Ludhiana',                   phone:'0161-2502872',  hours:'9 AM – 5 PM',  emergency:false, city:'Ludhiana',  lat:30.8990,lng:75.8490,rating:4.2,reviews:672},
+  ],
+  fire:[
+    {name:'Fire Station Phagwara',       addr:'Near Civil Hospital, GT Road, Phagwara',    phone:'01824-261101 / 101', hours:'Open 24/7', emergency:true, city:'Phagwara',  lat:31.2233,lng:75.7700,rating:4.1,reviews:42},
+    {name:'Fire Station Jal. (Main)',    addr:'Basti Sheikh, Jalandhar',                   phone:'0181-2222101 / 101', hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3270,lng:75.5790,rating:4.0,reviews:67},
+    {name:'Fire Station Jal. (South)',   addr:'Nakodar Road, Jalandhar',                   phone:'0181-2450101',       hours:'Open 24/7', emergency:true, city:'Jalandhar', lat:31.3100,lng:75.5870,rating:3.9,reviews:38},
+    {name:'Fire Station Ludhiana (HQ)', addr:'Feroze Gandhi Market, Ludhiana',             phone:'0161-2402101 / 101', hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9010,lng:75.8540,rating:4.2,reviews:98},
+    {name:'Fire Station Ludhiana (S)',   addr:'Haibowal Area, Ludhiana',                   phone:'0161-2500101',       hours:'Open 24/7', emergency:true, city:'Ludhiana',  lat:30.9100,lng:75.8680,rating:4.0,reviews:54},
+  ],
+  parks:[
+    {name:'LPU Uni-Mall & Food Court',   addr:'Inside LPU Campus, Phagwara',              phone:'01824-404040',  hours:'10 AM – 10 PM', emergency:false, city:'LPU Campus',lat:31.2544,lng:75.7051,rating:4.5,reviews:1834},
+    {name:'Phagwara Municipal Park',     addr:'Near GT Road, Phagwara',                   phone:'01824-260010',  hours:'6 AM – 8 PM',   emergency:false, city:'Phagwara',  lat:31.2220,lng:75.7680,rating:3.8,reviews:88},
+    {name:'Company Bagh – Jalandhar',    addr:'Company Bagh, Jalandhar',                  phone:'0181-2224000',  hours:'5 AM – 9 PM',   emergency:false, city:'Jalandhar', lat:31.3310,lng:75.5870,rating:4.3,reviews:312},
+    {name:'Wonder World Mall – Jal.',    addr:'GT Road, Jalandhar',                       phone:'0181-5050100',  hours:'10 AM – 10 PM', emergency:false, city:'Jalandhar', lat:31.3280,lng:75.5600,rating:4.4,reviews:2134},
+    {name:'Reliance Mall – Jal.',        addr:'Nakodar Road, Jalandhar',                  phone:'0181-4600200',  hours:'11 AM – 10 PM', emergency:false, city:'Jalandhar', lat:31.3250,lng:75.5650,rating:4.2,reviews:1678},
+    {name:'Nehru Rose Garden – Ldh.',    addr:'BRS Nagar, Ludhiana',                      phone:'0161-2771122',  hours:'7 AM – 7 PM',   emergency:false, city:'Ludhiana',  lat:30.9060,lng:75.8720,rating:4.4,reviews:987},
+    {name:'Silver Arc Mall – Ludhiana',  addr:'Feroze Gandhi Marg, Ludhiana',             phone:'0161-5057000',  hours:'10 AM – 10 PM', emergency:false, city:'Ludhiana',  lat:30.9020,lng:75.8480,rating:4.5,reviews:3421},
+    {name:'Westend Mall – Ludhiana',     addr:'Ferozepur Road, Ludhiana',                 phone:'0161-4609000',  hours:'10 AM – 10 PM', emergency:false, city:'Ludhiana',  lat:30.8990,lng:75.8380,rating:4.3,reviews:2789},
+  ],
+  banks:[
+    {name:'SBI – LPU Campus Branch',    addr:'Inside LPU Campus, Phagwara',             phone:'1800-11-2211',  hours:'10 AM – 4 PM (Mon–Sat)', emergency:false, city:'LPU Campus',lat:31.2544,lng:75.7051,rating:4.0,reviews:134},
+    {name:'Axis Bank – LPU Area',       addr:'Dhandari Khurd, Near LPU, Phagwara',      phone:'1800-419-5959', hours:'9:30 AM – 4 PM',        emergency:false, city:'LPU Campus',lat:31.2560,lng:75.7030,rating:4.1,reviews:89},
+    {name:'SBI – Phagwara Main',        addr:'GT Road, Phagwara',                       phone:'1800-11-2211',  hours:'10 AM – 4 PM',          emergency:false, city:'Phagwara',  lat:31.2225,lng:75.7705,rating:3.9,reviews:112},
+    {name:'PNB – Phagwara Branch',      addr:'Near Bus Stand, Phagwara',                phone:'1800-180-2222', hours:'10 AM – 4 PM',          emergency:false, city:'Phagwara',  lat:31.2218,lng:75.7712,rating:3.8,reviews:97},
+    {name:'SBI – Jalandhar Main',       addr:'Model Town, Jalandhar',                   phone:'1800-11-2211',  hours:'10 AM – 4 PM',          emergency:false, city:'Jalandhar', lat:31.3360,lng:75.5905,rating:4.1,reviews:234},
+    {name:'HDFC Bank – Jalandhar',      addr:'Lajpat Nagar, Jalandhar',                 phone:'1800-202-6161', hours:'9:30 AM – 4:30 PM',     emergency:false, city:'Jalandhar', lat:31.3215,lng:75.5748,rating:4.3,reviews:312},
+    {name:'ICICI Bank – Jalandhar',     addr:'BMC Chowk, Jalandhar',                    phone:'1800-200-3344', hours:'9:30 AM – 4:30 PM',     emergency:false, city:'Jalandhar', lat:31.3282,lng:75.5830,rating:4.2,reviews:289},
+    {name:'SBI – Ludhiana Main',        addr:'Feroze Gandhi Market, Ludhiana',          phone:'1800-11-2211',  hours:'10 AM – 4 PM',          emergency:false, city:'Ludhiana',  lat:30.9010,lng:75.8530,rating:4.0,reviews:421},
+    {name:'Punjab & Sind – Ludhiana',   addr:'Chaura Bazar, Ludhiana',                  phone:'1800-419-8300', hours:'10 AM – 4 PM',          emergency:false, city:'Ludhiana',  lat:30.9005,lng:75.8550,rating:3.9,reviews:178},
+    {name:'HDFC Bank – Ludhiana',       addr:'BRS Nagar, Ludhiana',                     phone:'1800-202-6161', hours:'9:30 AM – 4:30 PM',     emergency:false, city:'Ludhiana',  lat:30.9065,lng:75.8710,rating:4.2,reviews:312},
+  ],
+};
+
+/* ── AI synonym map ──────────────────────────────── */
+const SYNONYMS={
+  'doctor':'hospitals','hospital':'hospitals','clinic':'hospitals','emergency':'hospitals',
+  'ambulance':'hospitals','medical':'hospitals','health':'hospitals','medicine':'pharmacies',
+  'cash':'atms','money':'atms','withdraw':'atms','bank machine':'atms',
+  'cop':'police','police':'police','safety':'police','crime':'police','helpline':'police',
+  'pharmacy':'pharmacies','drug':'pharmacies','chemist':'pharmacies','medicine store':'pharmacies',
+  'school':'education','college':'education','university':'education','study':'education',
+  'lpu':'education','education':'education',
+  'fire':'fire','firefighter':'fire',
+  'park':'parks','mall':'parks','shopping':'parks','garden':'parks','fun':'parks',
+  'atm':'atms','bank':'banks','sbi':'banks','hdfc':'banks','icici':'banks',
+};
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   STATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+let activeCity='All', sortMode='distance', emergencyMode=false;
+let userLat=null, userLng=null;
+let favorites=JSON.parse(localStorage.getItem('pf_favs')||'[]');
+let recentSearches=JSON.parse(localStorage.getItem('pf_recent')||'[]');
+let currentModal=null;
+let isDark=true;
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   HELPERS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function dist(lat,lng){
+  if(!userLat||!userLng||!lat||!lng) return 9999;
+  const R=6371, dLat=(lat-userLat)*Math.PI/180, dLng=(lng-userLng)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(userLat*Math.PI/180)*Math.cos(lat*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function fmtDist(d){
+  if(d>=9999) return '—';
+  return d<1?`${(d*1000).toFixed(0)} m`:d<10?`${d.toFixed(1)} km`:`${d.toFixed(0)} km`;
+}
+function isOpen(h){
+  if(!h||h.toLowerCase().includes('24')) return true;
+  const now=new Date(), cur=now.getHours()*60+now.getMinutes();
+  const m=h.match(/(\d+)(?::(\d+))?\s*(AM|PM).*?(\d+)(?::(\d+))?\s*(AM|PM)/i);
+  if(!m) return true;
+  const toMin=(H,M,ap)=>{let h=parseInt(H)%12+(ap.toUpperCase()==='PM'?12:0);return h*60+(parseInt(M)||0)};
+  return cur>=toMin(m[1],m[2],m[3])&&cur<toMin(m[4],m[5],m[6]);
+}
+function stars(r){
+  let s=''; for(let i=1;i<=5;i++) s+=i<=Math.floor(r)?'★':(i-r<1?'⯨':'☆'); return s;
+}
+function storeRecent(q){
+  recentSearches=recentSearches.filter(r=>r!==q).slice(0,4);
+  recentSearches.unshift(q);
+  localStorage.setItem('pf_recent',JSON.stringify(recentSearches));
+  renderRecent();
+}
+function toast(msg,ms=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),ms);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   GEOLOCATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function getLocation(){
+  const btn=document.getElementById('loc-btn');
+  btn.innerHTML='<i class="fas fa-spinner fa-spin"></i>';
+  if(!navigator.geolocation){toast('Geolocation not supported ❌');btn.innerHTML='<i class="fas fa-location-crosshairs"></i>';return;}
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      userLat=pos.coords.latitude; userLng=pos.coords.longitude;
+      const bar=document.getElementById('loc-bar');
+      document.getElementById('loc-txt').textContent=`Your location detected (${userLat.toFixed(4)}, ${userLng.toFixed(4)})`;
+      document.getElementById('loc-badge').textContent='GPS Active';
+      bar.classList.add('show');
+      btn.innerHTML='<i class="fas fa-location-crosshairs" style="color:var(--green)"></i>';
+      toast('📍 Location detected! Distances updated.');
+      if(document.getElementById('res-section').style.display!=='none') refreshCurrentView();
+      renderCats();
+    },
+    err=>{
+      btn.innerHTML='<i class="fas fa-location-crosshairs"></i>';
+      const msgs={1:'Location access denied. Please allow in browser.',2:'Location unavailable.',3:'Location timed out.'};
+      toast(msgs[err.code]||'Location error ❌',3500);
+    },
+    {timeout:8000,enableHighAccuracy:true}
+  );
+}
+
+let _curCat=null;
+function refreshCurrentView(){
+  if(_curCat) showCat(_curCat);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   THEME
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function toggleTheme(){
+  isDark=!isDark;
+  document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
+  document.getElementById('theme-btn').innerHTML=isDark?'<i class="fas fa-moon"></i>':'<i class="fas fa-sun"></i>';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EMERGENCY MODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function toggleEM(){
+  emergencyMode=!emergencyMode;
+  document.getElementById('em-ribbon').classList.toggle('show',emergencyMode);
+  if(emergencyMode){
+    // Gather all emergency resources across all categories
+    let emRes=[];
+    CATS.forEach(c=>{
+      (DATA[c.id]||[]).filter(r=>r.emergency).forEach(r=>emRes.push({r,cat:c}));
+    });
+    emRes.sort((a,b)=>dist(a.r.lat,a.r.lng)-dist(b.r.lat,b.r.lng));
+    document.getElementById('cat-section').style.display='none';
+    const rs=document.getElementById('res-section');
+    rs.style.display='block';
+    document.getElementById('res-title').textContent='🚨 Emergency Services';
+    document.getElementById('sort-bar').classList.add('show');
+    renderResGrid(emRes.map(x=>x.r),null,emRes.map(x=>x.cat));
+    rs.scrollIntoView({behavior:'smooth',block:'start'});
+    toast('🚨 Emergency mode activated!');
+  } else {
+    toast('Emergency mode deactivated.');
+    showCats();
+  }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CITY / SORT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function setCity(btn,c){
+  activeCity=c;
+  document.querySelectorAll('.ctab').forEach(b=>b.classList.toggle('on',b.dataset.c===c));
+  renderCats();
+  if(document.getElementById('res-section').style.display!=='none'&&_curCat) showCat(_curCat);
+}
+function setSort(btn,s){
+  sortMode=s;
+  document.querySelectorAll('.srtbtn').forEach(b=>b.classList.toggle('on',b.dataset.s===s));
+  if(_curCat) showCat(_curCat);
+}
+function filterCity(arr){return activeCity==='All'?arr:arr.filter(r=>r.city===activeCity)}
+function sortArr(arr){
+  return [...arr].sort((a,b)=>{
+    if(sortMode==='distance') return dist(a.lat,a.lng)-dist(b.lat,b.lng);
+    if(sortMode==='rating')   return b.rating-a.rating;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   RENDER CATEGORIES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderCats(){
+  const g=document.getElementById('cat-grid');
+  g.innerHTML='';
+  CATS.forEach((c,i)=>{
+    const count=filterCity(DATA[c.id]||[]).length;
+    const el=document.createElement('div');
+    el.className='cat-card';
+    el.style.cssText=`--cc-g:${c.clr.g};--cc-s:${c.clr.s};--cc-a:${c.clr.a};animation-delay:${i*55}ms`;
+    el.innerHTML=`<span class="cc-icon">${c.icon}</span>
+      <div class="cc-lbl">${c.label}</div>
+      <div class="cc-cnt">${count} ${activeCity==='All'?'across Punjab':'in '+activeCity}</div>`;
+    el.onclick=()=>showCat(c);
+    g.appendChild(el);
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SHOW CATEGORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function showCat(cat){
+  _curCat=cat;
+  document.getElementById('cat-section').style.display='none';
+  const rs=document.getElementById('res-section');
+  rs.style.display='block';
+  document.getElementById('res-title').textContent=`${cat.icon} ${cat.label}`;
+  document.getElementById('sort-bar').classList.add('show');
+  const filtered=sortArr(filterCity(DATA[cat.id]||[]));
+  document.getElementById('res-count').textContent=`${filtered.length} result${filtered.length!==1?'s':''}`;
+  renderResGrid(filtered,[cat]);
+  rs.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function showCats(){
+  _curCat=null;
+  document.getElementById('res-section').style.display='none';
+  document.getElementById('cat-section').style.display='block';
+  document.getElementById('sort-bar').classList.remove('show');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   RENDER RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderResGrid(resources, cats, perCats){
+  // cats = single-element array for category view, or null for mixed
+  // perCats = parallel array of cats for each resource (mixed mode)
+  const g=document.getElementById('res-grid');
+  g.innerHTML='';
+  if(!resources.length){
+    g.innerHTML=`<div class="no-res"><span class="nr-ico">🔍</span><h3>No results found</h3><p>Try selecting "All Cities" or adjusting your search.</p></div>`;
+    return;
+  }
+  resources.forEach((r,i)=>{
+    const cat=perCats?perCats[i]:(cats&&cats[0]);
+    const clr=cat?.clr||{s:'rgba(91,156,255,.25)',a:'#5b9cff'};
+    const d=dist(r.lat,r.lng);
+    const open=isOpen(r.hours);
+    const isFav=favorites.some(f=>f.name===r.name&&f.city===r.city);
+    const card=document.createElement('div');
+    card.className='rc';
+    card.style.cssText=`--rc-s:${clr.s};--rc-a:${clr.a};animation-delay:${i*50}ms`;
+    card.innerHTML=`
+      <div class="rc-top">
+        <div class="rc-icon">${cat?.icon||'📍'}</div>
+        <div class="rc-meta2">
+          <div class="rc-name">${r.name}</div>
+          <div class="rc-city">🏙️ ${r.city}</div>
+        </div>
+        <button class="rc-fav${isFav?' on':''}" onclick="event.stopPropagation();toggleFav(this,'${r.name}','${r.city}')" title="Save to favorites">
+          <i class="fas fa-heart"></i>
+        </button>
+      </div>
+      <div class="rc-addr">📍 ${r.addr}</div>
+      <div class="rc-tags">
+        ${r.emergency?'<span class="tag tg-em">🚨 Emergency</span>':''}
+        <span class="tag ${open?'tg-open':'tg-close'}">${open?'🟢 Open Now':'🔴 Closed'}</span>
+        ${perCats&&cat?`<span class="tag tg-cat">${cat.label}</span>`:''}
+      </div>
+      <div class="rc-foot">
+        <span class="rc-dist"><i class="fas fa-route"></i> ${fmtDist(d)}</span>
+        <span class="rc-stars" title="${r.rating}/5">${stars(r.rating)} <small style="color:var(--txt3)">${r.rating}</small></span>
+      </div>
+      <div class="rc-phone"><i class="fas fa-phone" style="color:var(--green)"></i> ${r.phone} · ⏰ ${r.hours}</div>`;
+    card.onclick=()=>openModal(r,cat);
+    g.appendChild(card);
+  });
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   MODAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function openModal(r,cat){
+  currentModal={r,cat};
+  const d=dist(r.lat,r.lng);
+  const open=isOpen(r.hours);
+  const isFav=favorites.some(f=>f.name===r.name&&f.city===r.city);
+  document.getElementById('m-icon').textContent=cat?.icon||'📍';
+  document.getElementById('m-name').textContent=r.name;
+  document.getElementById('m-cat').textContent=(cat?.label||'Resource')+' · '+r.city;
+  const fb=document.getElementById('m-fav');
+  fb.className='m-fav'+(isFav?' on':'');
+  document.getElementById('m-badges').innerHTML=`
+    ${r.emergency?'<span class="tag tg-em">🚨 Emergency</span>':''}
+    <span class="tag ${open?'tg-open':'tg-close'}">${open?'🟢 Open Now':'🔴 Closed'}</span>
+    ${d<9999?`<span class="m-dist"><i class="fas fa-route"></i> ${fmtDist(d)} away</span>`:''}`;
+  document.getElementById('m-info').innerHTML=`
+    <div><strong>📍</strong> ${r.addr}</div>
+    <div><strong>📞</strong> ${r.phone}</div>
+    <div><strong>⏰</strong> ${r.hours}</div>
+    <div><strong>🏙️</strong> ${r.city}</div>`;
+  document.getElementById('m-rating').innerHTML=`
+    <span class="m-stars">${stars(r.rating)}</span>
+    <span class="m-rv">${r.rating}</span>
+    <span class="m-rc">(${r.reviews.toLocaleString()} reviews)</span>`;
+  const q=encodeURIComponent(r.name+' '+r.addr);
+  const origin=userLat?`${userLat},${userLng}`:'LPU+Phagwara';
+  document.getElementById('m-maps').href=`https://www.google.com/maps/search/?api=1&query=${q}`;
+  document.getElementById('m-dir').href=`https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${encodeURIComponent(r.addr)}`;
+  document.getElementById('m-call').href=`tel:${r.phone.replace(/[^0-9+]/g,'')}`;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow='';
+  currentModal=null;
+}
+function toggleFavModal(){
+  if(!currentModal) return;
+  toggleFavByName(currentModal.r.name,currentModal.r.city,currentModal.cat);
+  const isFav=favorites.some(f=>f.name===currentModal.r.name&&f.city===currentModal.r.city);
+  document.getElementById('m-fav').className='m-fav'+(isFav?' on':'');
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   FAVORITES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function toggleFav(btn,name,city){
+  const cat=findCatForResource(name,city);
+  toggleFavByName(name,city,cat);
+  btn.classList.toggle('on',favorites.some(f=>f.name===name&&f.city===city));
+}
+function toggleFavByName(name,city,cat){
+  const idx=favorites.findIndex(f=>f.name===name&&f.city===city);
+  if(idx>=0){favorites.splice(idx,1);toast('❤️ Removed from favorites');}
+  else{favorites.unshift({name,city,icon:cat?.icon||'📍',cat:cat?.label||''});toast('❤️ Added to favorites!');}
+  localStorage.setItem('pf_favs',JSON.stringify(favorites));
+  renderFavList();
+}
+function findCatForResource(name,city){
+  for(const c of CATS){
+    if((DATA[c.id]||[]).some(r=>r.name===name&&r.city===city)) return c;
+  }return null;
+}
+function openFav(){
+  document.getElementById('fav-panel').classList.add('open');
+  document.getElementById('pov').classList.add('show');
+  renderFavList();
+}
+function closeFav(){
+  document.getElementById('fav-panel').classList.remove('open');
+  document.getElementById('pov').classList.remove('show');
+}
+function renderFavList(){
+  const el=document.getElementById('fav-list');
+  if(!favorites.length){el.innerHTML='<div class="sp-empty">No favorites yet.<br>Tap ❤️ on any card to save.</div>';return;}
+  el.innerHTML=favorites.map((f,i)=>`
+    <div class="fav-item" onclick="openFavItem('${f.name}','${f.city}')">
+      <span class="fi-icon">${f.icon}</span>
+      <div class="fi-info"><div class="fi-name">${f.name}</div><div class="fi-city">🏙️ ${f.city} · ${f.cat}</div></div>
+      <button class="fi-del" onclick="event.stopPropagation();removeFav(${i})" title="Remove"><i class="fas fa-xmark"></i></button>
+    </div>`).join('');
+}
+function removeFav(i){
+  favorites.splice(i,1);
+  localStorage.setItem('pf_favs',JSON.stringify(favorites));
+  renderFavList();
+  toast('Removed from favorites');
+}
+function openFavItem(name,city){
+  closeFav();
+  let found=null,cat=null;
+  for(const c of CATS){const r=(DATA[c.id]||[]).find(r=>r.name===name&&r.city===city);if(r){found=r;cat=c;break;}}
+  if(found) setTimeout(()=>openModal(found,cat),200);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SMART SEARCH (AI-style synonym + fuzzy)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function smartResolve(q){
+  // exact synonym map
+  const lq=q.toLowerCase().trim();
+  if(SYNONYMS[lq]) return SYNONYMS[lq];
+  // partial match in synonyms
+  for(const [k,v] of Object.entries(SYNONYMS)){
+    if(lq.includes(k)||k.includes(lq)) return v;
+  }
+  return null;
+}
+function fuzzyScore(str,q){
+  str=str.toLowerCase(); q=q.toLowerCase();
+  if(str.includes(q)) return 1;
+  // letter-by-letter
+  let si=0;let score=0;
+  for(let qi=0;qi<q.length;qi++){
+    const idx=str.indexOf(q[qi],si);
+    if(idx>=0){score++;si=idx+1;}
+  }
+  return score/q.length;
+}
+
+function doSearch(){
+  const raw=document.getElementById('srch-in').value.trim();
+  if(!raw){toast('Please enter something to search 🔍');return;}
+  document.getElementById('suggestions').style.display='none';
+  storeRecent(raw);
+
+  // AI synonym resolution → show entire category
+  const resolved=smartResolve(raw);
+  if(resolved){
+    const cat=CATS.find(c=>c.id===resolved);
+    if(cat){showCat(cat);return;}
+  }
+
+  // Check for direct category label match
+  const lcRaw=raw.toLowerCase();
+  const catMatch=CATS.find(c=>c.label.toLowerCase().includes(lcRaw)||c.id.includes(lcRaw));
+  if(catMatch){showCat(catMatch);return;}
+
+  // Full fuzzy search across all data
+  let results=[];
+  CATS.forEach(cat=>{
+    filterCity(DATA[cat.id]||[]).forEach(r=>{
+      const score=Math.max(
+        fuzzyScore(r.name,raw),
+        fuzzyScore(r.addr,raw),
+        fuzzyScore(r.city,raw),
+        fuzzyScore(cat.label,raw)
+      );
+      if(score>0.45) results.push({r,cat,score});
+    });
+  });
+  results.sort((a,b)=>b.score-a.score||dist(a.r.lat,a.r.lng)-dist(b.r.lat,b.r.lng));
+
+  // Show results
+  document.getElementById('cat-section').style.display='none';
+  const rs=document.getElementById('res-section');
+  rs.style.display='block';
+  document.getElementById('res-title').textContent=`🔍 "${raw}"`;
+  document.getElementById('sort-bar').classList.add('show');
+  document.getElementById('res-count').textContent=`${results.length} result${results.length!==1?'s':''}`;
+  _curCat=null;
+  renderResGrid(results.map(x=>x.r),null,results.map(x=>x.cat));
+  rs.scrollIntoView({behavior:'smooth'});
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LIVE SUGGESTIONS (as-you-type)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function buildSuggestions(q){
+  if(!q||q.length<2){document.getElementById('suggestions').style.display='none';return;}
+  const lq=q.toLowerCase();
+  let items=[];
+
+  // Synonym hit → show category
+  const resolved=smartResolve(q);
+  if(resolved){
+    const cat=CATS.find(c=>c.id===resolved);
+    if(cat) items.push({icon:cat.icon,text:`<span class="sug-match">${cat.label}</span>`,hint:'Category',action:()=>showCat(cat)});
+  }
+
+  // Category name matches
+  CATS.filter(c=>c.label.toLowerCase().includes(lq)).forEach(c=>{
+    if(!items.find(x=>x.hint==='Category'&&x.text.includes(c.label)))
+      items.push({icon:c.icon,text:c.label,hint:'Category',action:()=>showCat(c)});
+  });
+
+  // Resource matches (top 5)
+  let res=[];
+  CATS.forEach(cat=>{
+    filterCity(DATA[cat.id]||[]).filter(r=>r.name.toLowerCase().includes(lq)||r.addr.toLowerCase().includes(lq)).forEach(r=>res.push({r,cat}));
+  });
+  res.slice(0,5).forEach(({r,cat})=>{
+    items.push({icon:cat.icon,text:r.name,hint:r.city,action:()=>{document.getElementById('suggestions').style.display='none';openModal(r,cat);}});
+  });
+
+  items=items.slice(0,7);
+  if(!items.length){document.getElementById('suggestions').style.display='none';return;}
+  const box=document.getElementById('suggestions');
+  box.innerHTML=items.map((_,i)=>`<div class="sug-item" data-i="${i}">
+    <span class="sug-em">${items[i].icon}</span>
+    <span>${items[i].text}</span>
+    <span class="sug-hint">${items[i].hint}</span>
+  </div>`).join('');
+  box.querySelectorAll('.sug-item').forEach((el,i)=>el.onclick=()=>{
+    document.getElementById('suggestions').style.display='none';
+    items[i].action();
+  });
+  box.style.display='block';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   RECENT SEARCHES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+function renderRecent(){
+  const row=document.getElementById('recent-row');
+  if(!recentSearches.length){row.innerHTML='';return;}
+  row.innerHTML=recentSearches.map(r=>`
+    <button class="rchip" onclick="document.getElementById('srch-in').value='${r}';doSearch()">
+      <i class="fas fa-clock-rotate-left"></i>${r}
+    </button>`).join('');
+}
+function clearSrch(){
+  document.getElementById('srch-in').value='';
+  document.getElementById('srch-clr').style.display='none';
+  document.getElementById('suggestions').style.display='none';
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EVENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+document.getElementById('srch-in').addEventListener('input',e=>{
+  const v=e.target.value;
+  document.getElementById('srch-clr').style.display=v?'block':'none';
+  buildSuggestions(v);
+});
+document.getElementById('srch-in').addEventListener('keydown',e=>{
+  if(e.key==='Enter') doSearch();
+  if(e.key==='Escape') document.getElementById('suggestions').style.display='none';
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.srch-wrap')) document.getElementById('suggestions').style.display='none';
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();closeFav();}
+});
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   INIT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+renderCats();
+renderRecent();
+</script>
+</body>
+</html>
