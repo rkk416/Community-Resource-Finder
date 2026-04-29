@@ -1,99 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Community Resource Finder</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>PunjabFind — LPU Community Resource Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-  <!-- Animated Background -->
-  <div class="bg-blobs">
-    <div class="blob blob1"></div>
-    <div class="blob blob2"></div>
-    <div class="blob blob3"></div>
-    <div class="blob blob4"></div>
-    <div class="blob blob5"></div>
-  </div>
+<div id="bg-canvas">
+  <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+  <div class="grid-lines"></div>
+</div>
 
-  <!-- Header -->
-  <header class="header">
-    <div class="logo">
-      <span class="logo-icon">🌐</span>
-      <span class="logo-text">CommunityFind</span>
-    </div>
-    <p class="tagline">Your city, at your fingertips.</p>
-  </header>
+<div id="em-ribbon">
+  <div class="em-dot"></div>
+  <span>🚨 EMERGENCY MODE — Nearest emergency services only</span>
+  <button class="em-close" onclick="toggleEM()"><i class="fas fa-xmark"></i></button>
+</div>
 
-  <!-- Hero Search -->
-  <section class="hero">
-    <h1 class="hero-title">Find What <span class="gradient-text">Matters</span> Near You</h1>
-    <p class="hero-sub">Instantly discover hospitals, ATMs, police stations, pharmacies, schools and more — all in one place.</p>
-
-    <div class="search-bar">
-      <i class="fas fa-search search-icon"></i>
-      <input type="text" id="searchInput" placeholder="Search resources or categories..." autocomplete="off"/>
-      <button class="search-btn" onclick="handleSearch()">Search</button>
-    </div>
-  </section>
-
-  <!-- Category Filter -->
-  <section class="categories-section">
-    <h2 class="section-title">Browse by Category</h2>
-    <div class="category-grid" id="categoryGrid"></div>
-  </section>
-
-  <!-- Results Section -->
-  <section class="results-section" id="resultsSection" style="display:none;">
-    <div class="results-header">
-      <h2 class="section-title" id="resultsTitle">Results</h2>
-      <button class="back-btn" onclick="showAllCategories()">← Back to Categories</button>
-    </div>
-    <div class="results-grid" id="resultsGrid"></div>
-  </section>
-
-  <!-- Stats Section -->
-  <section class="stats-section">
-    <div class="stat-card">
-      <div class="stat-number">6+</div>
-      <div class="stat-label">Categories</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">50+</div>
-      <div class="stat-label">Resources Listed</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">24/7</div>
-      <div class="stat-label">Always Available</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-number">100%</div>
-      <div class="stat-label">Free to Use</div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <p>Made with ❤️ for the Community &nbsp;|&nbsp; AIML Project &nbsp;|&nbsp; © 2025 CommunityFind</p>
-  </footer>
-
-  <!-- Resource Detail Modal -->
-  <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <button class="modal-close" onclick="closeModal()">✕</button>
-      <div class="modal-icon" id="modalIcon"></div>
-      <h2 class="modal-name" id="modalName"></h2>
-      <p class="modal-category" id="modalCategory"></p>
-      <div class="modal-details" id="modalDetails"></div>
-      <a class="modal-map-btn" id="modalMapBtn" href="#" target="_blank">
-        <i class="fas fa-map-marker-alt"></i> View on Google Maps
-      </a>
+<header>
+  <div class="logo">
+    <div class="logo-icon">PF</div>
+    <div>
+      <span class="logo-name">PunjabFind</span>
+      <span class="logo-tag">LPU · Phagwara · Jalandhar · Ludhiana</span>
     </div>
   </div>
+  <div class="hdr-acts">
+    <button class="hb" onclick="getLocation()" title="Use my location" id="loc-btn"><i class="fas fa-location-crosshairs"></i></button>
+    <button class="hb em" onclick="toggleEM()" title="Emergency mode"><i class="fas fa-triangle-exclamation"></i></button>
+    <button class="hb" onclick="openFav()" title="Favorites" id="fav-hb"><i class="fas fa-heart"></i></button>
+    <button class="hb" onclick="toggleTheme()" id="theme-btn" title="Toggle theme"><i class="fas fa-moon"></i></button>
+  </div>
+</header>
 
-  <script src="app.js"></script>
+<div id="loc-bar">
+  <i class="fas fa-map-pin"></i>
+  <span id="loc-txt">Detecting your location…</span>
+  <span id="loc-badge"></span>
+</div>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-h1">Find What <span class="hl">Matters</span><br>Near You</h1>
+    <p class="hero-sub">Hospitals · ATMs · Police · Pharmacies · Schools · Banks<br>
+      <b>LPU Campus · Phagwara · Jalandhar · Ludhiana</b></p>
+    <div class="srch-wrap">
+      <div class="srch-box">
+        <i class="fas fa-magnifying-glass"></i>
+        <input id="srch-in" type="text" placeholder="Try: hospital, ATM, doctor, police, pharmacy…" autocomplete="off" spellcheck="false"/>
+        <button class="srch-clr" id="srch-clr" onclick="clearSrch()"><i class="fas fa-xmark"></i></button>
+        <button class="srch-go" onclick="doSearch()">Search</button>
+      </div>
+      <div id="suggestions" class="suggestions" style="display:none"></div>
+      <div class="recent-row" id="recent-row"></div>
+    </div>
+  </div>
+</section>
+
+<div class="city-tabs" id="city-tabs">
+  <button class="ctab on" data-c="All" onclick="setCity(this,'All')">🌍 All Cities</button>
+  <button class="ctab" data-c="LPU Campus" onclick="setCity(this,'LPU Campus')">📍 LPU Campus</button>
+  <button class="ctab" data-c="Phagwara" onclick="setCity(this,'Phagwara')">🏘️ Phagwara</button>
+  <button class="ctab" data-c="Jalandhar" onclick="setCity(this,'Jalandhar')">🏙️ Jalandhar</button>
+  <button class="ctab" data-c="Ludhiana" onclick="setCity(this,'Ludhiana')">🌆 Ludhiana</button>
+</div>
+
+<div id="sort-bar">
+  <span class="sort-lbl">Sort:</span>
+  <button class="srtbtn on" data-s="distance" onclick="setSort(this,'distance')"><i class="fas fa-route"></i> Distance</button>
+  <button class="srtbtn" data-s="rating" onclick="setSort(this,'rating')"><i class="fas fa-star"></i> Rating</button>
+  <button class="srtbtn" data-s="name" onclick="setSort(this,'name')"><i class="fas fa-arrow-down-a-z"></i> Name</button>
+  <span id="res-count"></span>
+</div>
+
+<section id="cat-section">
+  <h2 class="sec-h">Browse by Category</h2>
+  <div class="cat-grid" id="cat-grid"></div>
+</section>
+
+<section id="res-section">
+  <div class="res-hdr">
+    <h2 class="sec-h" id="res-title"></h2>
+    <button class="back-btn" onclick="showCats()"><i class="fas fa-arrow-left"></i> Back</button>
+  </div>
+  <div class="res-grid" id="res-grid"></div>
+</section>
+
+<div id="stats">
+  <div class="stat"><span class="sn">8</span><span class="sl">Categories</span></div>
+  <div class="stat"><span class="sn">65+</span><span class="sl">Resources</span></div>
+  <div class="stat"><span class="sn">4</span><span class="sl">Cities</span></div>
+  <div class="stat"><span class="sn">24/7</span><span class="sl">Emergency</span></div>
+</div>
+
+<footer>Made with ❤️ for LPU Students &nbsp;·&nbsp; AIML Project 2025 &nbsp;·&nbsp; Punjab, India</footer>
+
+<div class="pov" id="pov" onclick="closeFav()"></div>
+<div id="fav-panel">
+  <div class="sp-hdr">
+    <span><i class="fas fa-heart" style="color:var(--red);margin-right:7px"></i>Favorites</span>
+    <button onclick="closeFav()"><i class="fas fa-xmark"></i></button>
+  </div>
+  <div class="sp-body" id="fav-list"></div>
+</div>
+
+<div id="modal" onclick="closeModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-x" onclick="closeModal()"><i class="fas fa-xmark"></i></button>
+    <div class="m-top">
+      <div class="m-icon" id="m-icon"></div>
+      <div class="m-title">
+        <div class="m-name" id="m-name"></div>
+        <div class="m-cat" id="m-cat"></div>
+      </div>
+      <button class="m-fav" id="m-fav" onclick="toggleFavModal()"><i class="fas fa-heart"></i></button>
+    </div>
+    <div class="m-badges" id="m-badges"></div>
+    <div class="m-info" id="m-info"></div>
+    <div class="m-rating" id="m-rating"></div>
+    <div class="m-acts">
+      <a class="mab p" id="m-maps" href="#" target="_blank"><i class="fas fa-map-location-dot"></i> Google Maps</a>
+      <a class="mab g" id="m-dir" href="#" target="_blank"><i class="fas fa-diamond-turn-right"></i> Directions</a>
+      <a class="mab r" id="m-call" href="#"><i class="fas fa-phone"></i> Call</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
