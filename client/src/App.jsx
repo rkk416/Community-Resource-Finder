@@ -114,7 +114,7 @@ export default function App() {
                   AI-Powered Community Resource Finder
                 </div>
                 <h1 className="mt-1 text-2xl font-bold tracking-tight">
-                  <span className="gradient-text">PunjabFind</span>
+                  <span className="gradient-text"></span>
                   <span className="text-white"> AI</span>
                 </h1>
               </div>
