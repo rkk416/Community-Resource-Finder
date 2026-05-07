@@ -1,9 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Bot, SendHorizonal, UserRound } from 'lucide-react';
 import MessageBubble from './MessageBubble.jsx';
 
 export default function ChatWindow({ messages, loading, onSend, suggestions }) {
   const [draft, setDraft] = useState('');
+  const bottomRef = useRef(null);
+
+  // Auto-scroll to bottom whenever messages or loading indicator changes
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
   function submit(event) {
     event.preventDefault();
@@ -89,6 +95,9 @@ export default function ChatWindow({ messages, loading, onSend, suggestions }) {
             </div>
           </div>
         )}
+
+        {/* Scroll anchor */}
+        <div ref={bottomRef} />
       </div>
 
       {/* ── Input bar ── */}

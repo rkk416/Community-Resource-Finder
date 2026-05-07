@@ -45,6 +45,7 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
+    setRecommended([]); // clear AI picks so the panel reflects the new city filter
     fetchResources({ city })
       .then(({ resources }) => setResources(resources))
       .catch((err) => setError(err.message));
@@ -114,8 +115,8 @@ export default function App() {
                   AI-Powered Community Resource Finder
                 </div>
                 <h1 className="mt-1 text-2xl font-bold tracking-tight">
-                  <span className="gradient-text"></span>
-                  <span className="text-white"> AI</span>
+                  <span className="gradient-text">Community</span>
+                  <span className="text-white"> Resource Finder</span>
                 </h1>
               </div>
 
