@@ -1,16 +1,24 @@
-# Dependencies
+# ── Dependencies ─────────────────────────────────────────────────────────────
 node_modules/
+**/node_modules/
 
-# Build output
+# ── Build output (Render builds this at deploy time — don't commit it) ────────
 dist/
 client/dist/
+server/dist/
 
-# Environment variables
+# ── Environment variables (NEVER commit secrets) ──────────────────────────────
 .env
+.env.local
+.env.production
 client/.env
+client/.env.local
 server/.env
+server/.env.local
+# .env.example files ARE intentionally committed (they have no real secrets)
+!server/.env.example
 
-# Logs (prevent cluttering root)
+# ── Logs ─────────────────────────────────────────────────────────────────────
 *.log
 *.out.log
 *.err.log
@@ -18,7 +26,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# OS / editor junk
+# ── OS / editor ───────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 .vscode/settings.json

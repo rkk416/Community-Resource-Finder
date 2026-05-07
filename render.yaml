@@ -1,0 +1,41 @@
+# render.yaml — Render Blueprint for Community Resource Finder
+# Docs: https://render.com/docs/blueprint-spec
+#
+# DEPLOYMENT ARCHITECTURE
+# ─────────────────────────────────────────────────────────────────────────────
+#  One Web Service serves BOTH the API and the React SPA.
+#  Build step:   installs all workspaces + builds client/dist with Vite
+#  Start step:   runs Express in NODE_ENV=production
+#  Express then: serves client/dist as static files + handles /api/* routes
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  - type: web
+    name: community-resource-finder
+    runtime: node
+    region: singapore          # closest to Punjab, India — change if needed
+    plan: free                 # upgrade to Starter ($7/mo) to avoid spin-down
+
+    # Render runs these from the REPO ROOT
+    buildCommand: npm run render:build
+    startCommand: npm run start:prod
+
+    # ── Automatically set by Render (you do NOT need to touch these) ──────────
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+
+      - key: NODE_ENV
+        value: production
+
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+
+      # ── YOU only need to set these 2 in the Render dashboard ────────────────
+      - key: OPENAI_API_KEY
+        sync: false
+
+      - key: MONGODB_URI
+        sync: false
+
+      # PORT is set automatically by Render — do NOT set it yourself
